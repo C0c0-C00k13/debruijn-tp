@@ -159,12 +159,12 @@ def test_solve_entry_tips():
 
 def test_solve_out_tips():
     graph_1 = nx.DiGraph()
-    graph_1.add_weighted_edges_from([(1, 2, 15), (2, 3, 15), (4, 5, 15), (4, 6, 2)])
+    graph_1.add_weighted_edges_from([(1, 2, 15), (2, 3, 15), (3, 4, 15), (4, 5, 15), (4, 6, 2)])
     graph_1 = solve_out_tips(graph_1, [5, 6])  
     assert (4, 6) not in graph_1.edges()
     assert (4, 5) in graph_1.edges()  
     graph_2 = nx.DiGraph()
-    graph_2.add_weighted_edges_from([(1, 2, 15), (2, 3, 15), (4, 5, 2), (4, 6, 2) , (6, 7, 2)])
+    graph_2.add_weighted_edges_from([(1, 2, 15), (2, 3, 15), (3, 4, 15) (4, 5, 2), (4, 6, 2) , (6, 7, 2)])
     graph_2 = solve_out_tips(graph_2, [5, 7])  
     assert (4, 5) not in graph_2.edges()
     assert (6, 7) in graph_2.edges() 

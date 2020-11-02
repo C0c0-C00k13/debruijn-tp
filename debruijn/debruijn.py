@@ -65,6 +65,60 @@ def get_arguments():
     return parser.parse_args()
 
 
+def read_fastq(fastq_file):
+    pass
+
+
+def cut_kmer(read, kmer_size):
+    pass
+
+
+def build_kmer_dict(fastq_file, kmer_size):
+    pass
+
+
+def build_graph(kmer_dict):
+    pass
+
+
+def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
+    pass
+
+def std(data):
+    pass
+
+
+def select_best_path(graph, path_list, path_length, weight_avg_list, 
+                     delete_entry_node=False, delete_sink_node=False):
+    pass
+
+def path_average_weight(graph, path):
+    pass
+
+def solve_bubble(graph, ancestor_node, descendant_node):
+    pass
+
+def simplify_bubbles(graph):
+    pass
+
+def solve_entry_tips(graph, starting_nodes):
+    pass
+
+def solve_out_tips(graph, ending_nodes):
+    pass
+
+def get_starting_nodes(graph):
+    pass
+
+def get_sink_nodes(graph):
+    pass
+
+def get_contigs(graph, starting_nodes, ending_nodes):
+    pass
+
+def save_contigs(contigs_list, output_file):
+    pass
+
 #==============================================================
 # Main program
 #==============================================================

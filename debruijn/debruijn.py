@@ -119,6 +119,11 @@ def get_contigs(graph, starting_nodes, ending_nodes):
 def save_contigs(contigs_list, output_file):
     pass
 
+
+def fill(text, width=80):
+    """Split text with a line return to respect fasta format"""
+    return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
+
 #==============================================================
 # Main program
 #==============================================================

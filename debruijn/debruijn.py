@@ -58,10 +58,12 @@ def get_arguments():
     parser.add_argument('-i', dest='fastq_file', type=isfile,
                         required=True, help="Fastq file")
     parser.add_argument('-k', dest='kmer_size', type=int,
-                        default=21, help="K-mer size (default 21)")
+                        default=22, help="K-mer size (default 21)")
     parser.add_argument('-o', dest='output_file', type=str,
                         default=os.curdir + os.sep + "contigs.fasta",
                         help="Output contigs in fasta file")
+    parser.add_argument('-f', dest='graphimg_file', type=str,
+                        help="Save graph as image (png)")
     return parser.parse_args()
 
 
@@ -124,6 +126,33 @@ def fill(text, width=80):
     """Split text with a line return to respect fasta format"""
     return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
 
+def draw_graph(graph, graphimg_file):
+    """Draw the graph
+    """                                    
+    fig, ax = plt.subplots()
+    elarge = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] > 3]
+    #print(elarge)
+    esmall = [(u, v) for (u, v, d) in graph.edges(data=True) if d['weight'] <= 3]
+    #print(elarge)
+    # Draw the graph with networkx
+    #pos=nx.spring_layout(graph)
+    pos = nx.random_layout(graph)
+    nx.draw_networkx_nodes(graph, pos, node_size=6)
+    nx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
+    nx.draw_networkx_edges(graph, pos, edgelist=esmall, width=6, alpha=0.5, 
+                           edge_color='b', style='dashed')
+    #nx.draw_networkx(graph, pos, node_size=10, with_labels=False)
+    # save image
+    plt.savefig(graphimg_file)
+
+
+def save_graph(graph, graph_file):
+    """Save the graph with pickle
+    """
+    with open(graph_file, "wt") as save:
+            pickle.dump(graph, save)
+
+
 #==============================================================
 # Main program
 #==============================================================
@@ -133,6 +162,17 @@ def main():
     """
     # Get arguments
     args = get_arguments()
+
+    # Fonctions de dessin du graphe
+    # A decommenter si vous souhaitez visualiser un petit 
+    # graphe
+    # Plot the graph
+    # if args.graphimg_file:
+    #     draw_graph(graph, args.graphimg_file)
+    # Save the graph in file
+    # if args.graph_file:
+    #     save_graph(graph, args.graph_file)
+
 
 if __name__ == '__main__':
     main()

@@ -23,6 +23,8 @@ import random
 random.seed(9001)
 from random import randint
 import statistics
+import matplotlib.pyplot as plt
+matplotlib.use("Agg")
 
 __author__ = "Your Name"
 __copyright__ = "Universite Paris Diderot"
@@ -58,7 +60,7 @@ def get_arguments():
     parser.add_argument('-i', dest='fastq_file', type=isfile,
                         required=True, help="Fastq file")
     parser.add_argument('-k', dest='kmer_size', type=int,
-                        default=22, help="K-mer size (default 21)")
+                        default=22, help="k-mer size (default 22)")
     parser.add_argument('-o', dest='output_file', type=str,
                         default=os.curdir + os.sep + "contigs.fasta",
                         help="Output contigs in fasta file")

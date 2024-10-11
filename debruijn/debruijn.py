@@ -164,9 +164,12 @@ def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
     # Initialisation d'un graphique vide
     G = nx.DiGraph()
 
+    kmer_keys = list(kmer_dict.keys())
     # Ajout des nodes 
-    for key, val in dico_kmer.items():
-        G.add_edge(u_of_edge=key,v_of_edge=key, weight= val)
+    for kmer in kmer_keys:
+        for other_kmer in kmer_keys:
+            if kmer[1:] == other_kmer[:-1]:
+                G.add_edge(u_of_edge=kmer,v_of_edge=other_kmer, weight= kmer_dict[kmer])
 
     return G
 

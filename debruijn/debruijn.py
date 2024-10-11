@@ -39,13 +39,13 @@ from typing import Iterator, Dict, List
 
 matplotlib.use("Agg")
 
-__author__ = "Your Name"
+__author__ = "Emilie-Jeanne MAYI"
 __copyright__ = "Universite Paris Diderot"
-__credits__ = ["Your Name"]
+__credits__ = ["Emilie-Jeanne MAYI"]
 __license__ = "GPL"
 __version__ = "1.0.0"
-__maintainer__ = "Your Name"
-__email__ = "your@email.fr"
+__maintainer__ = "Emilie-Jeanne MAYI"
+__email__ = "emilie-jeanne.mayi@etu.u-paris.fr"
 __status__ = "Developpement"
 
 
@@ -102,7 +102,19 @@ def read_fastq(fastq_file: Path) -> Iterator[str]:
     :param fastq_file: (Path) Path to the fastq file.
     :return: A generator object that iterate the read sequences.
     """
-    pass
+    # Liste des sequences
+    sequences = []
+    # liste des qualites
+    quality = []
+
+    # Retourne un generateur de séquence
+    with open(fastq_file, 'rt') as input_file:
+        
+        # Remplissage des listes
+        for line in input_file:
+            yield input_file.readline().strip() # lecture de sequence
+            input_file.readline() # lecture du +
+            input_file.readline() # lecture de la qualite
 
 
 def cut_kmer(read: str, kmer_size: int) -> Iterator[str]:
@@ -111,7 +123,10 @@ def cut_kmer(read: str, kmer_size: int) -> Iterator[str]:
     :param read: (str) Sequence of a read.
     :return: A generator object that provides the kmers (str) of size kmer_size.
     """
-    pass
+    
+    # Definition de la taille de kmer
+    for index in range(len(read) - (kmer_size - 1)):
+        yield read[index:(index + kmer_size)]
 
 
 def build_kmer_dict(fastq_file: Path, kmer_size: int) -> Dict[str, int]:
@@ -120,7 +135,24 @@ def build_kmer_dict(fastq_file: Path, kmer_size: int) -> Dict[str, int]:
     :param fastq_file: (str) Path to the fastq file.
     :return: A dictionnary object that identify all kmer occurrences.
     """
-    pass
+    
+    # Récupération des séquences
+    read = read_fastq(fastq_file)
+
+    # Initialisation d'une liste pour récupérer l'ensemble des k-mers 
+    liste_kmer = []
+    
+    for sequence in read:
+        # Recupération des kmer par séquence
+        generator_kmer = cut_kmer(sequence, kmer_size)
+
+        # Mise à jour de la liste de kmer
+        liste_kmer = liste_kmer + list(generator_kmer)
+            
+    uniq_kmer = set(liste_kmer)
+    dico_kmer = dict([[kmer, liste_kmer.count(kmer)] for kmer in uniq_kmer])
+    
+    return dico_kmer
 
 
 def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
@@ -129,7 +161,14 @@ def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
     :param kmer_dict: A dictionnary object that identify all kmer occurrences.
     :return: A directed graph (nx) of all kmer substring and weight (occurrence).
     """
-    pass
+    # Initialisation d'un graphique vide
+    G = nx.DiGraph()
+
+    # Ajout des nodes 
+    for key, val in dico_kmer.items():
+        G.add_edge(u_of_edge=key,v_of_edge=key, weight= val)
+
+    return G
 
 
 def remove_paths(

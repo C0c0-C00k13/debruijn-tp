@@ -165,9 +165,15 @@ def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
     G = nx.DiGraph()
 
     kmer_keys = list(kmer_dict.keys())
+    
     # Ajout des nodes 
+    # Parcours de la liste de k-mer
     for kmer in kmer_keys:
+        
+        # Parcours de la liste de k-mer : potentiels nodes voisins
         for other_kmer in kmer_keys:
+            
+            # Test : k-mers successifs/ liés
             if kmer[1:] == other_kmer[:-1]:
                 G.add_edge(u_of_edge=kmer,v_of_edge=other_kmer, weight= kmer_dict[kmer])
 
@@ -271,7 +277,22 @@ def get_starting_nodes(graph: DiGraph) -> List[str]:
     :param graph: (nx.DiGraph) A directed graph object
     :return: (list) A list of all nodes without predecessors
     """
-    pass
+    starting_nodes = []
+
+    # Parcours les nodes du graphe
+    for index_node in range(len( list(G.nodes()) )):
+    
+        # Sommet actuellement traversé
+        current_node = list(G.nodes())[index_node]
+        # Récupère la liste des prédécesseurs du node
+        dict_keyiterator_0 = G.predecessors( current_node )
+    
+        # Test : node de départ
+        if list(dict_keyiterator_0)) == 0:
+            print(f"node sans predecesseur : {current_node}")
+            starting_nodes.append( current_node )
+
+    return starting_nodes
 
 
 def get_sink_nodes(graph: DiGraph) -> List[str]:
@@ -280,11 +301,26 @@ def get_sink_nodes(graph: DiGraph) -> List[str]:
     :param graph: (nx.DiGraph) A directed graph object
     :return: (list) A list of all nodes without successors
     """
-    pass
+    sinking_nodes = []
+
+    # Parcours les nodes du graphe
+    for index_node in range(len( list(G.nodes()) )):
+    
+        # Sommet actuellement traversé
+        current_node = list(G.nodes())[index_node]
+        # Récupère la liste des prédécesseurs du node
+        dict_keyiterator_0 = G.successors(current_node)
+    
+        # Test : node de fin
+        if len(list(dict_keyiterator_0)) == 0:
+            print(f"Sinking node : {current_node}")
+            sinking_nodes.append(current_node)
+    
+    return sinking_nodes
 
 
 def get_contigs(
-    graph: DiGraph, starting_nodes: List[str], ending_nodes: List[str]
+    graph: DiGraph, starting_nodes: List[str], starting_nodes: List[str]
 ) -> List:
     """Extract the contigs from the graph
 
@@ -293,7 +329,28 @@ def get_contigs(
     :param ending_nodes: (list) A list of nodes without successors
     :return: (list) List of [contiguous sequence and their length]
     """
-    pass
+    LIST_CONTIG = []
+
+    # Parcourt tous les de noeuds de départs
+    for start_node in starting_nodes:
+        
+        # Parcourt touts les noeuds d'arrivée
+        for end_node in starting_nodes:
+            
+            # Test : Chemin existant
+            if nx.has_path(G, start_node, end_node):
+                # Récupération de chemin sous forme de liste
+                chemin = list(nx.all_simple_paths(G=G, source=start_node, target=end_node))
+                
+                # Reconstruction du contig (séquence)
+                init_contig = chemin[0][0] 
+                for kmer in chemin[0][1:]:
+                    init_contig = init_contig + kmer[-1]
+                    
+                # Ajout du tuple (contig, longueur)
+                LIST_CONTIG.append( (init_contig, len(init_contig)) )
+                
+    return LIST_CONTIG
 
 
 def save_contigs(contigs_list: List[str], output_file: Path) -> None:
@@ -302,7 +359,13 @@ def save_contigs(contigs_list: List[str], output_file: Path) -> None:
     :param contig_list: (list) List of [contiguous sequence and their length]
     :param output_file: (Path) Path to the output file
     """
-    pass
+
+    # Fonction save_contigs
+    with open (output_file, "w") as output:
+        for index_contig, contig in enumerate(contigs_list):
+            output.write(f">contig_{index_contig} : {contig[1]}\n{textwrap.fill(contig[0], width=40)}\n")
+            
+    print(f"Impression du fichier: {output_file}")
 
 
 def draw_graph(graph: DiGraph, graphimg_file: Path) -> None:  # pragma: no cover

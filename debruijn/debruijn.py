@@ -195,7 +195,24 @@ def remove_paths(
     :param delete_sink_node: (boolean) True->We remove the last node of a path
     :return: (nx.DiGraph) A directed graph object
     """
-    pass
+    if delete_entry_node and delete_sink_node:
+        # Suppression de tous les nodes du chemin
+        graph.remove_nodes_from(path_list)
+            
+    elif not delete_entry_node and not delete_sink_node:
+        # Suppression de tous les nodes du chemin saut le premier et le dernier
+        graph.remove_nodes_from(path_list[1:-1])
+    
+    else:
+        if delete_entry_node:
+            # Suppression de tous les nodes du chemin saut le dernier
+            graph.remove_nodes_from(path_list[:-1])
+            
+        elif delete_sink_node:
+            # Suppression de tous les nodes du chemin sauf le premier
+            graph.remove_nodes_from(path_list[1:])
+    
+    return graph
 
 
 def select_best_path(
@@ -363,7 +380,7 @@ def save_contigs(contigs_list: List[str], output_file: Path) -> None:
     # Fonction save_contigs
     with open (output_file, "w") as output:
         for index_contig, contig in enumerate(contigs_list):
-            output.write(f">contig_{index_contig} : {contig[1]}\n{textwrap.fill(contig[0], width=40)}\n")
+            output.write(f">contig_{index_contig}={contig[1]}\n{textwrap.fill(contig[0], width=80)}\n")
             
     print(f"Impression du fichier: {output_file}")
 
@@ -401,6 +418,20 @@ def main() -> None:  # pragma: no cover
     """
     # Get arguments
     args = get_arguments()
+
+    # Lecture du fichier + Construction du graphe
+    FILENAME = isfile("../data/eva71_plus_perfect.fq")
+    dico_kmer = build_kmer_dict(fastq_path=FILENAME, kmer_size= 5)
+    graph = build_graph(dico_kmer)
+
+    # Résolution des bulles
+
+    # Résolution des pointes d’entrée et de sortie
+    
+    # Ecriture du/des contig
+    # save_contigs()
+
+    
 
     # Fonctions de dessin du graphe
     # A decommenter si vous souhaitez visualiser un petit

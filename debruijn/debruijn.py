@@ -26,6 +26,7 @@ from networkx import (
     draw,
     spring_layout,
 )
+import networkx as nx
 import matplotlib
 from operator import itemgetter
 import random
@@ -73,7 +74,7 @@ def get_arguments():  # pragma: no cover
 
     :return: An object that contains the arguments
     """
-    # Parsing arguments
+    # Parsing arguments"
     parser = argparse.ArgumentParser(
         description=__doc__, usage="{0} -h".format(sys.argv[0])
     )
@@ -123,7 +124,6 @@ def cut_kmer(read: str, kmer_size: int) -> Iterator[str]:
     :param read: (str) Sequence of a read.
     :return: A generator object that provides the kmers (str) of size kmer_size.
     """
-    
     # Definition de la taille de kmer
     for index in range(len(read) - (kmer_size - 1)):
         yield read[index:(index + kmer_size)]
@@ -135,7 +135,6 @@ def build_kmer_dict(fastq_file: Path, kmer_size: int) -> Dict[str, int]:
     :param fastq_file: (str) Path to the fastq file.
     :return: A dictionnary object that identify all kmer occurrences.
     """
-    
     # Récupération des séquences
     read = read_fastq(fastq_file)
 
@@ -162,7 +161,7 @@ def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
     :return: A directed graph (nx) of all kmer substring and weight (occurrence).
     """
     # Initialisation d'un graphique vide
-    G = nx.DiGraph()
+    G = DiGraph()
 
     kmer_keys = list(kmer_dict.keys())
     
@@ -198,20 +197,16 @@ def remove_paths(
     if delete_entry_node and delete_sink_node:
         # Suppression de tous les nodes du chemin
         graph.remove_nodes_from(path_list)
-            
     elif not delete_entry_node and not delete_sink_node:
         # Suppression de tous les nodes du chemin saut le premier et le dernier
         graph.remove_nodes_from(path_list[1:-1])
-    
     else:
         if delete_entry_node:
             # Suppression de tous les nodes du chemin saut le dernier
             graph.remove_nodes_from(path_list[:-1])
-            
         elif delete_sink_node:
             # Suppression de tous les nodes du chemin sauf le premier
             graph.remove_nodes_from(path_list[1:])
-    
     return graph
 
 
@@ -297,15 +292,15 @@ def get_starting_nodes(graph: DiGraph) -> List[str]:
     starting_nodes = []
 
     # Parcours les nodes du graphe
-    for index_node in range(len( list(G.nodes()) )):
+    for index_node in range(len( list(graph.nodes()) )):
     
         # Sommet actuellement traversé
-        current_node = list(G.nodes())[index_node]
+        current_node = list(graph.nodes())[index_node]
         # Récupère la liste des prédécesseurs du node
-        dict_keyiterator_0 = G.predecessors( current_node )
+        dict_keyiterator_0 = graph.predecessors( current_node )
     
         # Test : node de départ
-        if list(dict_keyiterator_0)) == 0:
+        if list(dict_keyiterator_0) == 0:
             print(f"node sans predecesseur : {current_node}")
             starting_nodes.append( current_node )
 
@@ -321,12 +316,12 @@ def get_sink_nodes(graph: DiGraph) -> List[str]:
     sinking_nodes = []
 
     # Parcours les nodes du graphe
-    for index_node in range(len( list(G.nodes()) )):
+    for index_node in range(len( list(graph.nodes()) )):
     
         # Sommet actuellement traversé
-        current_node = list(G.nodes())[index_node]
+        current_node = list(graph.nodes())[index_node]
         # Récupère la liste des prédécesseurs du node
-        dict_keyiterator_0 = G.successors(current_node)
+        dict_keyiterator_0 = graph.successors(current_node)
     
         # Test : node de fin
         if len(list(dict_keyiterator_0)) == 0:
@@ -337,7 +332,7 @@ def get_sink_nodes(graph: DiGraph) -> List[str]:
 
 
 def get_contigs(
-    graph: DiGraph, starting_nodes: List[str], starting_nodes: List[str]
+    graph: DiGraph, starting_nodes: List[str], ending_nodes: List[str]
 ) -> List:
     """Extract the contigs from the graph
 
@@ -352,21 +347,19 @@ def get_contigs(
     for start_node in starting_nodes:
         
         # Parcourt touts les noeuds d'arrivée
-        for end_node in starting_nodes:
+        for end_node in ending_nodes:
             
             # Test : Chemin existant
-            if nx.has_path(G, start_node, end_node):
+            if has_path(graph, start_node, end_node):
                 # Récupération de chemin sous forme de liste
-                chemin = list(nx.all_simple_paths(G=G, source=start_node, target=end_node))
+                chemin = list(all_simple_paths(G=graph, source=start_node, target=end_node))
                 
                 # Reconstruction du contig (séquence)
-                init_contig = chemin[0][0] 
+                init_contig = chemin[0][0]
                 for kmer in chemin[0][1:]:
-                    init_contig = init_contig + kmer[-1]
-                    
+                    init_contig = init_contig + kmer[-1]    
                 # Ajout du tuple (contig, longueur)
                 LIST_CONTIG.append( (init_contig, len(init_contig)) )
-                
     return LIST_CONTIG
 
 
@@ -376,12 +369,10 @@ def save_contigs(contigs_list: List[str], output_file: Path) -> None:
     :param contig_list: (list) List of [contiguous sequence and their length]
     :param output_file: (Path) Path to the output file
     """
-
     # Fonction save_contigs
     with open (output_file, "w") as output:
         for index_contig, contig in enumerate(contigs_list):
-            output.write(f">contig_{index_contig}={contig[1]}\n{textwrap.fill(contig[0], width=80)}\n")
-            
+            output.write(f">contig_{index_contig}={contig[1]}\n{textwrap.fill(contig[0], width=80)}\n")      
     print(f"Impression du fichier: {output_file}")
 
 
@@ -398,7 +389,7 @@ def draw_graph(graph: DiGraph, graphimg_file: Path) -> None:  # pragma: no cover
     # print(elarge)
     # Draw the graph with networkx
     # pos=nx.spring_layout(graph)
-    pos = nx.random_layout(graph)
+    pos = random_layout(graph)
     nx.draw_networkx_nodes(graph, pos, node_size=6)
     nx.draw_networkx_edges(graph, pos, edgelist=elarge, width=6)
     nx.draw_networkx_edges(
@@ -420,8 +411,8 @@ def main() -> None:  # pragma: no cover
     args = get_arguments()
 
     # Lecture du fichier + Construction du graphe
-    FILENAME = isfile("../data/eva71_plus_perfect.fq")
-    dico_kmer = build_kmer_dict(fastq_path=FILENAME, kmer_size= 5)
+    filename = isfile(".data/eva71_hundred_reads.fq")
+    dico_kmer = build_kmer_dict(fastq_file=filename, kmer_size= 5)
     graph = build_graph(dico_kmer)
 
     # Résolution des bulles

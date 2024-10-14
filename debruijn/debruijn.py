@@ -13,10 +13,20 @@
 
 """Perform assembly based on debruijn graph."""
 
+from typing import Iterator, Dict, List
 import argparse
 import os
 import sys
+import statistics
+import textwrap
+import matplotlib
 from pathlib import Path
+from operator import itemgetter
+import random
+random.seed(9001)
+from random import randint
+import matplotlib.pyplot as plt
+import networkx as nx
 from networkx import (
     DiGraph,
     all_simple_paths,
@@ -26,17 +36,6 @@ from networkx import (
     draw,
     spring_layout,
 )
-import networkx as nx
-import matplotlib
-from operator import itemgetter
-import random
-
-random.seed(9001)
-from random import randint
-import statistics
-import textwrap
-import matplotlib.pyplot as plt
-from typing import Iterator, Dict, List
 
 matplotlib.use("Agg")
 
@@ -110,7 +109,6 @@ def read_fastq(fastq_file: Path) -> Iterator[str]:
 
     # Retourne un generateur de séquence
     with open(fastq_file, 'rt') as input_file:
-        
         # Remplissage des listes
         for line in input_file:
             yield input_file.readline().strip() # lecture de sequence
@@ -137,20 +135,16 @@ def build_kmer_dict(fastq_file: Path, kmer_size: int) -> Dict[str, int]:
     """
     # Récupération des séquences
     read = read_fastq(fastq_file)
-
-    # Initialisation d'une liste pour récupérer l'ensemble des k-mers 
+    # Initialisation d'une liste pour récupérer l'ensemble des k-mers
     liste_kmer = []
-    
     for sequence in read:
         # Recupération des kmer par séquence
         generator_kmer = cut_kmer(sequence, kmer_size)
 
         # Mise à jour de la liste de kmer
         liste_kmer = liste_kmer + list(generator_kmer)
-            
     uniq_kmer = set(liste_kmer)
     dico_kmer = dict([[kmer, liste_kmer.count(kmer)] for kmer in uniq_kmer])
-    
     return dico_kmer
 
 
@@ -162,20 +156,15 @@ def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
     """
     # Initialisation d'un graphique vide
     G = DiGraph()
-
     kmer_keys = list(kmer_dict.keys())
-    
-    # Ajout des nodes 
+    # Ajout des nodes
     # Parcours de la liste de k-mer
     for kmer in kmer_keys:
-        
         # Parcours de la liste de k-mer : potentiels nodes voisins
         for other_kmer in kmer_keys:
-            
-            # Test : k-mers successifs/ liés
+            # Test : k-mers successifs/liés
             if kmer[1:] == other_kmer[:-1]:
                 G.add_edge(u_of_edge=kmer,v_of_edge=other_kmer, weight= kmer_dict[kmer])
-
     return G
 
 
@@ -293,17 +282,14 @@ def get_starting_nodes(graph: DiGraph) -> List[str]:
 
     # Parcours les nodes du graphe
     for index_node in range(len( list(graph.nodes()) )):
-    
         # Sommet actuellement traversé
         current_node = list(graph.nodes())[index_node]
         # Récupère la liste des prédécesseurs du node
         dict_keyiterator_0 = graph.predecessors( current_node )
-    
         # Test : node de départ
         if list(dict_keyiterator_0) == 0:
             print(f"node sans predecesseur : {current_node}")
             starting_nodes.append( current_node )
-
     return starting_nodes
 
 
@@ -314,20 +300,16 @@ def get_sink_nodes(graph: DiGraph) -> List[str]:
     :return: (list) A list of all nodes without successors
     """
     sinking_nodes = []
-
     # Parcours les nodes du graphe
     for index_node in range(len( list(graph.nodes()) )):
-    
         # Sommet actuellement traversé
         current_node = list(graph.nodes())[index_node]
         # Récupère la liste des prédécesseurs du node
         dict_keyiterator_0 = graph.successors(current_node)
-    
         # Test : node de fin
         if len(list(dict_keyiterator_0)) == 0:
             print(f"Sinking node : {current_node}")
             sinking_nodes.append(current_node)
-    
     return sinking_nodes
 
 
@@ -341,26 +323,22 @@ def get_contigs(
     :param ending_nodes: (list) A list of nodes without successors
     :return: (list) List of [contiguous sequence and their length]
     """
-    LIST_CONTIG = []
-
+    list_contig = []
     # Parcourt tous les de noeuds de départs
     for start_node in starting_nodes:
-        
         # Parcourt touts les noeuds d'arrivée
         for end_node in ending_nodes:
-            
             # Test : Chemin existant
             if has_path(graph, start_node, end_node):
                 # Récupération de chemin sous forme de liste
                 chemin = list(all_simple_paths(G=graph, source=start_node, target=end_node))
-                
                 # Reconstruction du contig (séquence)
                 init_contig = chemin[0][0]
                 for kmer in chemin[0][1:]:
                     init_contig = init_contig + kmer[-1]    
                 # Ajout du tuple (contig, longueur)
-                LIST_CONTIG.append( (init_contig, len(init_contig)) )
-    return LIST_CONTIG
+                list_contig.append( (init_contig, len(init_contig)) )
+    return list_contig
 
 
 def save_contigs(contigs_list: List[str], output_file: Path) -> None:
@@ -421,8 +399,6 @@ def main() -> None:  # pragma: no cover
     
     # Ecriture du/des contig
     # save_contigs()
-
-    
 
     # Fonctions de dessin du graphe
     # A decommenter si vous souhaitez visualiser un petit

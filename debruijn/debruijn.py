@@ -155,7 +155,7 @@ def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
     :return: A directed graph (nx) of all kmer substring and weight (occurrence).
     """
     # Initialisation d'un graphique vide
-    G = DiGraph()
+    output_graph = DiGraph()
     kmer_keys = list(kmer_dict.keys())
     # Ajout des nodes
     # Parcours de la liste de k-mer
@@ -164,8 +164,8 @@ def build_graph(kmer_dict: Dict[str, int]) -> DiGraph:
         for other_kmer in kmer_keys:
             # Test : k-mers successifs/liés
             if kmer[1:] == other_kmer[:-1]:
-                G.add_edge(u_of_edge=kmer,v_of_edge=other_kmer, weight= kmer_dict[kmer])
-    return G
+                output_graph.add_edge(u_of_edge=kmer,v_of_edge=other_kmer, weight= kmer_dict[kmer])
+    return output_graph
 
 
 def remove_paths(
@@ -335,7 +335,7 @@ def get_contigs(
                 # Reconstruction du contig (séquence)
                 init_contig = chemin[0][0]
                 for kmer in chemin[0][1:]:
-                    init_contig = init_contig + kmer[-1]    
+                    init_contig = init_contig + kmer[-1]
                 # Ajout du tuple (contig, longueur)
                 list_contig.append( (init_contig, len(init_contig)) )
     return list_contig
@@ -350,7 +350,7 @@ def save_contigs(contigs_list: List[str], output_file: Path) -> None:
     # Fonction save_contigs
     with open (output_file, "w") as output:
         for index_contig, contig in enumerate(contigs_list):
-            output.write(f">contig_{index_contig}={contig[1]}\n{textwrap.fill(contig[0], width=80)}\n")      
+            output.write(f">contig_{index_contig}={contig[1]}\n{textwrap.fill(contig[0], width=80)}\n")
     print(f"Impression du fichier: {output_file}")
 
 
@@ -396,7 +396,6 @@ def main() -> None:  # pragma: no cover
     # Résolution des bulles
 
     # Résolution des pointes d’entrée et de sortie
-    
     # Ecriture du/des contig
     # save_contigs()
 
